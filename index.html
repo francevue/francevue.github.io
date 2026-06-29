@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>France Vue : la France, comme vous ne l'avez jamais parcourue</title>
+<meta name="description" content="Parcourez la France en 3D : relief, photos aériennes et LiDAR HD depuis les données officielles de l'IGN. Gratuit, pour Windows.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --nuit: #0a0e16;
+    --nuit-2: #0f1522;
+    --texte: #eef2f8;
+    --texte-pale: #93a0b4;
+    --bleu-fr: #3055e8;
+    --bleu-clair: #6c8cff;
+    --bleu-vif: #4d79ff;
+    --rouge-fr: #ef4156;
+    --rouge-vif: #ff4d62;
+    --blanc: #f0f4ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif; background: var(--nuit); color: var(--texte);
+    overflow-x: hidden;
+  }
+  #nuage { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .hero-wrap { position: relative; min-height: 100vh; display: flex; flex-direction: column; }
+  .voile { position: absolute; inset: 0;
+    background: radial-gradient(ellipse 72% 56% at 50% 42%, rgba(10,14,22,0) 0%, rgba(10,14,22,.42) 72%, var(--nuit) 100%); }
+
+  nav {
+    position: relative; z-index: 3;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 6vw;
+  }
+  .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 21px;
+    display: flex; align-items: center; gap: 12px; letter-spacing: .01em; }
+  .puce-beta {
+    font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--bleu-clair);
+    border: 1px solid rgba(108,140,255,.45); border-radius: 100px; padding: 2px 9px;
+    background: rgba(108,140,255,.1);
+  }
+  .bandeau-beta {
+    display: inline-flex; align-items: center; gap: 9px;
+    margin-top: 30px; padding: 11px 20px; border-radius: 100px;
+    border: 1px solid rgba(108,140,255,.3); background: rgba(15,21,34,.5);
+    backdrop-filter: blur(6px); font-size: 14px; color: var(--texte-pale);
+    max-width: 60ch; line-height: 1.5; text-align: left;
+  }
+  .bandeau-beta b { color: var(--texte); font-weight: 600; }
+  .bandeau-beta .pastille-pt {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--bleu-clair); flex-shrink: 0;
+    box-shadow: 0 0 10px var(--bleu-clair);
+  }
+  .liseret { width: 4px; height: 26px; border-radius: 2px;
+    background: linear-gradient(180deg, var(--bleu-fr) 0 33%, #fff 33% 66%, var(--rouge-fr) 66% 100%); }
+  .logo-img { width: 38px; height: 38px; border-radius: 9px; display: block; flex-shrink: 0; }
+  footer .logo-img { width: 26px; height: 26px; border-radius: 6px; }
+  nav .links { display: flex; gap: 28px; align-items: center; font-size: 15px; }
+  nav a { color: var(--texte-pale); text-decoration: none; font-weight: 500; transition: color .15s; }
+  nav a:hover { color: var(--texte); }
+  nav a.coeur { color: var(--texte-pale); }
+  nav a.coeur:hover { color: var(--rouge-vif); }
+
+  .btn {
+    display: inline-block; color: #fff !important; font-weight: 600;
+    background: linear-gradient(100deg, var(--bleu-fr), var(--bleu-clair));
+    padding: 15px 30px; border-radius: 6px; text-decoration: none; font-size: 16px;
+    box-shadow: 0 0 34px rgba(48, 85, 232, .45);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(48, 85, 232, .65); }
+  .btn-ghost {
+    display: inline-block; color: var(--texte) !important; font-weight: 600;
+    border: 1px solid rgba(255,255,255,.25); border-radius: 6px;
+    padding: 14px 28px; text-decoration: none; font-size: 15.5px;
+    transition: border-color .15s, background .15s;
+  }
+  .btn-ghost:hover { border-color: rgba(255,77,98,.6); background: rgba(255,77,98,.08); }
+
+  .hero {
+    position: relative; z-index: 2; flex: 1;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; padding: 40px 6vw 110px;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    border: 1px solid rgba(255,255,255,.16); border-radius: 100px;
+    padding: 8px 18px; font-size: 13.5px; color: var(--texte-pale);
+    backdrop-filter: blur(6px); background: rgba(15,21,34,.45); margin-bottom: 34px;
+  }
+  .badge b { color: var(--texte); font-weight: 600; }
+  h1 {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+    font-size: clamp(42px, 6.6vw, 88px); line-height: 1.04; letter-spacing: -.025em;
+    max-width: 17ch;
+    background: linear-gradient(90deg,
+      var(--bleu-vif) 0%, var(--bleu-vif) 27%,
+      var(--blanc) 40%, var(--blanc) 60%,
+      var(--rouge-vif) 73%, var(--rouge-vif) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 4px 30px rgba(10,14,22,.95));
+  }
+  .sous-titre {
+    margin-top: 26px; font-size: 18px; line-height: 1.7; color: var(--texte-pale);
+    max-width: 56ch; text-shadow: 0 2px 18px rgba(10,14,22,.9);
+  }
+  .sous-titre b { color: var(--texte); font-weight: 600; }
+  .cta-row { margin-top: 40px; display: flex; gap: 20px; align-items: center; }
+  .cta-note { font-size: 13.5px; color: var(--texte-pale); text-align: left; line-height: 1.55; }
+
+  .stats {
+    position: relative; z-index: 2;
+    display: flex; justify-content: center; gap: clamp(30px, 7vw, 110px);
+    padding: 0 6vw 60px;
+  }
+  .stat { text-align: center; }
+  .stat .val { font-family: 'Space Grotesk', sans-serif; font-size: 34px; font-weight: 700; }
+  .stat:nth-child(1) .val span { color: var(--bleu-clair); }
+  .stat:nth-child(2) .val span { color: var(--blanc); }
+  .stat:nth-child(3) .val span { color: var(--rouge-vif); }
+  .stat .lab { font-size: 13px; color: var(--texte-pale); margin-top: 6px; letter-spacing: .04em; }
+
+  section { padding: 90px 6vw; }
+  .inner { max-width: 1180px; margin: 0 auto; }
+  h2 { font-family: 'Space Grotesk', sans-serif; font-size: 32px; font-weight: 700; margin-bottom: 16px; }
+  h2 span { color: var(--texte-pale); font-weight: 400; }
+  .section-intro { color: var(--texte-pale); font-size: 16.5px; line-height: 1.7; max-width: 62ch; margin-bottom: 44px; }
+  .section-intro b { color: var(--texte); }
+
+  /* Couches */
+  #fonctionnalites { background: var(--nuit-2); border-top: 1px solid rgba(255,255,255,.06); }
+  .grille { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .carte {
+    border: 1px solid rgba(255,255,255,.08); border-radius: 10px; padding: 26px;
+    background: linear-gradient(170deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+    transition: border-color .2s, transform .2s;
+  }
+  .carte:nth-child(1):hover { border-color: rgba(108,140,255,.5); transform: translateY(-3px); }
+  .carte:nth-child(2):hover { border-color: rgba(240,244,255,.5); transform: translateY(-3px); }
+  .carte:nth-child(3):hover { border-color: rgba(239,65,86,.5); transform: translateY(-3px); }
+  .carte .icone { font-size: 22px; margin-bottom: 16px; display: block; }
+  .carte h3 { font-family: 'Space Grotesk', sans-serif; font-size: 19px; margin-bottom: 10px; }
+  .carte p { font-size: 14.5px; line-height: 1.65; color: var(--texte-pale); }
+  .carte .tag { display: inline-block; margin-top: 14px; font-size: 11.5px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase; padding: 4px 10px; border-radius: 100px; }
+  .carte:nth-child(1) .tag { color: var(--bleu-clair); border: 1px solid rgba(108,140,255,.4); }
+  .carte:nth-child(2) .tag { color: var(--blanc); border: 1px solid rgba(240,244,255,.35); }
+  .carte:nth-child(3) .tag { color: var(--rouge-vif); border: 1px solid rgba(239,65,86,.4); }
+
+  /* Galerie */
+  .galerie-grille { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .capture {
+    position: relative; border-radius: 10px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,.08); aspect-ratio: 16/10;
+    transition: transform .2s, border-color .2s;
+  }
+  .capture:hover { transform: translateY(-3px); border-color: rgba(255,255,255,.25); }
+  .capture canvas, .capture img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .capture .nom {
+    position: absolute; left: 14px; bottom: 12px; z-index: 2;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16.5px;
+    text-shadow: 0 1px 3px rgba(0,0,0,.95), 0 2px 14px rgba(0,0,0,.85);
+  }
+  .capture .type {
+    position: absolute; right: 12px; top: 10px; z-index: 2;
+    font-size: 10.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    background: rgba(10,14,22,.82); border: 1px solid rgba(255,255,255,.2);
+    padding: 4px 9px; border-radius: 100px; color: var(--texte);
+    backdrop-filter: blur(4px); text-shadow: 0 1px 2px rgba(0,0,0,.6);
+  }
+  .capture .ombre { position: absolute; inset: 0; z-index: 1;
+    background:
+      linear-gradient(180deg, rgba(10,14,22,.35) 0%, transparent 22%, transparent 48%, rgba(10,14,22,.82) 100%); }
+
+  /* Souveraineté */
+  #souverainete { background: var(--nuit-2); border-top: 1px solid rgba(255,255,255,.06); }
+  .souv-grille { display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; margin-top: 10px; }
+  .souv .num {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px;
+    margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+  }
+  .souv:nth-child(1) .num { color: var(--bleu-clair); }
+  .souv:nth-child(2) .num { color: var(--blanc); }
+  .souv:nth-child(3) .num { color: var(--rouge-vif); }
+  .souv h3 { font-family: 'Space Grotesk', sans-serif; font-size: 20px; margin-bottom: 12px; }
+  .souv p { font-size: 15px; line-height: 1.7; color: var(--texte-pale); }
+  .souv p b { color: var(--texte); font-weight: 600; }
+
+  /* Soutien */
+  #soutenir .panneau {
+    display: flex; gap: 44px; align-items: center;
+    border: 1px solid rgba(255,255,255,.1); border-radius: 14px;
+    padding: 46px 50px;
+    background:
+      radial-gradient(ellipse 60% 120% at 0% 50%, rgba(48,85,232,.12), transparent 60%),
+      radial-gradient(ellipse 60% 120% at 100% 50%, rgba(239,65,86,.10), transparent 60%),
+      linear-gradient(170deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+  }
+  .portrait {
+    flex-shrink: 0; width: 150px; height: 150px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.2);
+    object-fit: cover;
+  }
+  .temoignage h3 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; margin-bottom: 14px; }
+  .temoignage p { font-size: 16px; line-height: 1.75; color: var(--texte-pale); max-width: 62ch; }
+  .temoignage p b { color: var(--texte); font-weight: 600; }
+  .temoignage .signature { margin-top: 14px; font-size: 14.5px; color: var(--texte-pale); font-style: italic; }
+  .temoignage .actions { margin-top: 26px; display: flex; gap: 16px; align-items: center; }
+  .btn-tipeee {
+    display: inline-flex; align-items: center; gap: 10px; color: #fff !important; font-weight: 600;
+    background: linear-gradient(100deg, var(--rouge-fr), #ff7585);
+    padding: 14px 28px; border-radius: 6px; text-decoration: none; font-size: 15.5px;
+    box-shadow: 0 0 30px rgba(239, 65, 86, .35);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn-tipeee:hover { transform: translateY(-2px); box-shadow: 0 0 46px rgba(239, 65, 86, .55); }
+
+  /* Communauté */
+  #communaute { background: var(--nuit-2); border-top: 1px solid rgba(255,255,255,.06); }
+  #communaute .carte h3 .canal { color: var(--texte-pale); font-weight: 400; font-size: 14px; }
+  .btn-discord {
+    display: inline-flex; align-items: center; gap: 11px; color: #fff !important; font-weight: 600;
+    background: linear-gradient(100deg, #5865F2, #7983f5);
+    padding: 15px 30px; border-radius: 6px; text-decoration: none; font-size: 16px;
+    box-shadow: 0 0 34px rgba(88, 101, 242, .4);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn-discord:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(88, 101, 242, .6); }
+  .btn-discord svg { width: 22px; height: 22px; fill: currentColor; }
+
+  /* FAQ */
+  #faq { border-top: 1px solid rgba(255,255,255,.06); }
+  .faq-liste { max-width: 820px; }
+  details {
+    border-bottom: 1px solid rgba(255,255,255,.08); padding: 4px 0;
+  }
+  summary {
+    cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center;
+    font-family: 'Space Grotesk', sans-serif; font-size: 17.5px; font-weight: 500;
+    padding: 18px 4px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; font-size: 22px; color: var(--texte-pale); transition: transform .2s; }
+  details[open] summary::after { transform: rotate(45deg); color: var(--rouge-vif); }
+  details p { padding: 0 4px 20px; font-size: 15px; line-height: 1.7; color: var(--texte-pale); max-width: 68ch; }
+  details p b { color: var(--texte); }
+
+  /* CTA final */
+  .final {
+    text-align: center; padding: 100px 6vw;
+  }
+  .final h2 { font-size: clamp(30px, 4vw, 46px); margin-bottom: 14px; }
+  .final p { color: var(--texte-pale); margin-bottom: 36px; font-size: 17px; }
+
+  footer {
+    padding: 30px 6vw; display: flex; justify-content: space-between; align-items: center;
+    font-size: 13.5px; color: var(--texte-pale); border-top: 1px solid rgba(255,255,255,.06);
+  }
+  footer b { color: var(--texte); }
+  footer .logo { font-size: 15px; }
+  footer .fcol { display: flex; gap: 22px; }
+  footer a { color: var(--texte-pale); text-decoration: none; }
+  footer a:hover { color: var(--texte); }
+
+  @media (max-width: 900px) {
+    .grille, .galerie-grille, .souv-grille { grid-template-columns: 1fr; }
+    .stats { flex-wrap: wrap; }
+    #soutenir .panneau { flex-direction: column; text-align: center; }
+    .temoignage .actions { justify-content: center; }
+    nav .links a:not(.btn) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero-wrap">
+  <canvas id="nuage"></canvas>
+  <div class="voile"></div>
+
+  <nav>
+    <div class="logo"><img class="logo-img" src="img/logo.png" alt="Logo France Vue">France Vue <span class="puce-beta">Bêta</span></div>
+    <div class="links">
+      <a href="#fonctionnalites">Fonctionnalités</a>
+      <a href="#galerie">Galerie</a>
+      <a href="#souverainete">Les données</a>
+      <a href="#communaute">Communauté</a>
+      <a href="#faq">FAQ</a>
+      <a href="#soutenir" class="coeur">Le créateur</a>
+      <a href="#telecharger" class="btn" style="padding:11px 22px;font-size:14.5px;">Télécharger</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="badge">Données <b>100% souveraines</b></div>
+    <h1>La France, comme vous ne l'avez jamais parcourue.</h1>
+    <p class="sous-titre">
+      Le relief exact, les photos aériennes, chaque arbre et chaque toit scannés
+      au laser : <b>la France des experts, à la portée de tous.</b>
+    </p>
+    <div class="cta-row">
+      <a href="https://github.com/francevue/france-vue/releases/latest/download/france-vue.zip" class="btn">Télécharger pour Windows</a>
+      <div class="cta-note">Gratuit · Windows 10 &amp; 11<br>Données officielles IGN</div>
+    </div>
+    <div class="bandeau-beta">
+      <span class="pastille-pt"></span>
+      <span><b>France Vue est en bêta.</b> L'app vit, grandit et se peaufine avec
+      ses premiers explorateurs. Vos retours et vos idées façonnent la suite,
+      <a href="#communaute" style="color:var(--bleu-clair);text-decoration:none;">rejoignez la communauté</a>.</span>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="val"><span>551&thinsp;695</span>&nbsp;km²</div><div class="lab">de territoire explorable</div></div>
+    <div class="stat"><div class="val"><span>≈&thinsp;10</span>&nbsp;pts/m²</div><div class="lab">de précision LiDAR HD</div></div>
+    <div class="stat"><div class="val"><span>3</span>&nbsp;couches</div><div class="lab">relief · photos · LiDAR</div></div>
+  </div>
+</div>
+
+<section id="fonctionnalites">
+  <div class="inner">
+    <h2>La France en haute définition. <span>Rien à préparer, rien à régler.</span></h2>
+    <p class="section-intro">
+      Pas de données à télécharger, pas de logiciel compliqué à apprendre :
+      France Vue assemble les meilleures données officielles de l'IGN en un monde
+      3D continu, pendant que vous l'explorez.
+    </p>
+    <div class="grille">
+      <div class="carte">
+        <span class="icone">⛰</span>
+        <h3>Un relief haute définition</h3>
+        <p>Chaque colline, chaque vallon, chaque falaise à sa vraie hauteur. Le terrain se reconstruit autour de vous au fil de votre balade.</p>
+        <span class="tag">Relief fidèle</span>
+      </div>
+      <div class="carte">
+        <span class="icone">🛰</span>
+        <h3>Une imagerie d'hier et d'aujourd'hui</h3>
+        <p>Des photos aériennes de haute qualité posées sur le terrain. Affichez la vue récente, ou remontez le temps pour voir le même lieu il y a des décennies.</p>
+        <span class="tag">Récent ou historique</span>
+      </div>
+      <div class="carte">
+        <span class="icone">✦</span>
+        <h3>Un scan laser ultra précis</h3>
+        <p>Le territoire scanné au laser à 10 cm près. Là où d'autres services se trompent de plusieurs mètres sur un toit ou un arbre, ici les volumes sont justes.</p>
+        <span class="tag">Précision 10 cm</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="galerie">
+  <div class="inner">
+    <h2>Marchez, survolez, mesurez, remontez le temps.</h2>
+    <p class="section-intro">
+      Explorer à pied ou en drone, mesurer un terrain, remonter le temps :
+      chaque vue ci-dessous est une chose que vous ferez dès la première minute.
+    </p>
+    <div class="galerie-grille">
+      <div class="capture"><canvas data-pal="alpes"></canvas><div class="ombre"></div><span class="type">Mode Piéton</span><span class="nom">Marchez au sommet</span></div>
+      <div class="capture"><img src="img/relief.jpg" alt="Vue aérienne du relief"><div class="ombre"></div><span class="type">Mode Drone</span><span class="nom">Survolez le relief</span></div>
+      <div class="capture"><canvas data-pal="etretat"></canvas><div class="ombre"></div><span class="type">Mesure</span><span class="nom">Mesurez le terrain</span></div>
+      <div class="capture"><canvas data-pal="calanques"></canvas><div class="ombre"></div><span class="type">Imagerie historique</span><span class="nom">Remontez le temps</span></div>
+      <div class="capture"><img src="img/lidar.jpg" alt="Nuage de points LiDAR classé"><div class="ombre"></div><span class="type">Scan LiDAR</span><span class="nom">Révélez chaque point</span></div>
+      <div class="capture"><canvas data-pal="pilat"></canvas><div class="ombre"></div><span class="type">Recherche</span><span class="nom">Tapez une adresse</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="souverainete">
+  <div class="inner">
+    <h2>Des données françaises, <span>et fières de l'être.</span></h2>
+    <p class="section-intro">
+      France Vue est construit sur la <b>Géoplateforme de l'IGN</b>, l'Institut
+      national de l'information géographique et forestière, celui qui lève,
+      photographie et scanne le territoire depuis plus de 80 ans.
+    </p>
+    <div class="souv-grille">
+      <div class="souv">
+        <div class="num">01</div>
+        <h3>La référence officielle</h3>
+        <p>Relief, orthophotos et LiDAR HD sont les <b>données de référence de l'État</b>,
+        produites et qualifiées par l'IGN. Pas une mosaïque de sources approximatives :
+        la France telle qu'elle est mesurée.</p>
+      </div>
+      <div class="souv">
+        <div class="num">02</div>
+        <h3>Une précision inégalée</h3>
+        <p>Le programme LiDAR HD scanne le territoire à <b>≈ 10 points par m²</b> :
+        chaque haie, chaque toit, chaque talus. Une bonne partie de la France est
+        déjà couverte, et le reste arrive bientôt.</p>
+      </div>
+      <div class="souv">
+        <div class="num">03</div>
+        <h3>Vous, et personne d'autre</h3>
+        <p>France Vue ne demande <b>aucun compte</b> et ne collecte
+        <b>aucune donnée personnelle</b>. Vos balades, vos adresses, vos lieux :
+        tout reste sur votre machine.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="soutenir">
+  <div class="inner">
+    <div class="panneau">
+      <img class="portrait" src="img/xavier.jpg" alt="Xavier, créateur de France Vue">
+      <div class="temoignage">
+        <h3>Qui est derrière France Vue ?</h3>
+        <p>
+          Je m'appelle Xavier. Ingénieur en géospatial et en rendu temps réel,
+          je travaille depuis huit ans sur les données du territoire.
+          J'ai créé France Vue pour rendre les données souveraines de l'IGN
+          accessibles à tous, et <b>aussi agréables à parcourir qu'un jeu vidéo</b>.
+        </p>
+        <p>
+          L'application est gratuite et sans publicité. En ce moment, je cherche
+          surtout des utilisateurs pour la tester et me proposer des
+          fonctionnalités pour la suite.
+        </p>
+        <p class="signature">Xavier</p>
+        <div class="actions">
+          <a href="#communaute" class="btn-tipeee">Rejoindre la communauté</a>
+          <span class="cta-note">Vos retours font l'app<br>Écrivez-moi : <a href="mailto:francevue@protonmail.com" style="color:var(--texte);">francevue@protonmail.com</a></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="communaute">
+  <div class="inner">
+    <h2>Construisons l'outil ensemble. <span>Vos retours décident de la suite.</span></h2>
+    <p class="section-intro">
+      France Vue veut rendre les <b>données cartographiques souveraines</b> utiles
+      à tous. Essayez-la, et venez façonner la suite : vos bugs, vos idées, vos
+      besoins.
+    </p>
+    <div class="grille">
+      <div class="carte">
+        <span class="icone">🧭</span>
+        <h3>Vos usages <span class="canal">#usages</span></h3>
+        <p>Explorer un lieu, mesurer un terrain, préparer un projet : racontez ce que vous faites de France Vue.</p>
+      </div>
+      <div class="carte">
+        <span class="icone">🐞</span>
+        <h3>Bugs <span class="canal">#bugs</span></h3>
+        <p>Un plantage, un affichage qui cloche ? Décrivez-le ici, c'est le chemin le plus court vers un correctif. Chaque version doit sa stabilité à ces retours.</p>
+      </div>
+      <div class="carte">
+        <span class="icone">🗳</span>
+        <h3>Fonctionnalités <span class="canal">#idees</span></h3>
+        <p>Bâtiments 3D, mode hors-ligne, Mac, Linux : proposez, votez, et regardez les plus demandées arriver dans l'application.</p>
+      </div>
+    </div>
+    <div class="cta-row">
+      <a href="https://discord.gg/DZvc6FEa5T" class="btn-discord" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.369A19.79 19.79 0 0 0 16.558 3.2a.074.074 0 0 0-.079.037c-.34.6-.717 1.385-.98 2.001a18.27 18.27 0 0 0-5.001 0 12.6 12.6 0 0 0-.997-2.001.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 5.66 4.369a.07.07 0 0 0-.032.027C2.62 8.859 1.79 13.236 2.18 17.557a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.873-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.1 13.1 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .078-.01c3.927 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .079.009c.12.099.245.198.372.292a.077.077 0 0 1-.006.127c-.598.35-1.22.645-1.873.892a.076.076 0 0 0-.04.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.055c.5-5.094-.838-9.43-3.549-13.161a.06.06 0 0 0-.031-.028zM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.418 2.157-2.418 1.21 0 2.176 1.094 2.157 2.418 0 1.334-.956 2.419-2.157 2.419zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.418 2.157-2.418 1.21 0 2.176 1.094 2.157 2.418 0 1.334-.946 2.419-2.157 2.419z"/></svg>
+        Rejoindre le Discord
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="inner">
+    <h2>Bon à savoir <span>avant de vous lancer.</span></h2>
+    <div class="faq-liste">
+      <details>
+        <summary>« Bêta », ça veut dire quoi ?</summary>
+        <p>Que France Vue est <b>déjà pleinement utilisable</b>, mais encore jeune :
+        des choses s'améliorent à chaque version et quelques défauts subsistent.
+        C'est le bon moment pour la prendre en main et <b>peser sur la suite</b> :
+        vos retours dans la communauté orientent directement ce qui est corrigé
+        et ajouté.</p>
+      </details>
+      <details>
+        <summary>Est-ce vraiment gratuit ?</summary>
+        <p>L'exploration de la France entière est <b>gratuite, sans publicité et
+        sans compte</b>, et le restera. Des modules optionnels pourront arriver
+        plus tard (hors-ligne, exports, mesures). Aujourd'hui, le projet vit
+        grâce aux <b>soutiens volontaires</b> sur Tipeee.</p>
+      </details>
+      <details>
+        <summary>D'où viennent les données ?</summary>
+        <p>De l'<b>IGN</b>, via sa Géoplateforme : le relief RGE Alti, les
+        orthophotographies officielles et le nuage de points LiDAR HD. Ce sont
+        les données géographiques de référence de la France, ouvertes à tous.</p>
+      </details>
+      <details>
+        <summary>Le LiDAR HD couvre-t-il toute la France ?</summary>
+        <p>Le programme LiDAR HD de l'IGN couvre le territoire progressivement.
+        La majeure partie de la France est déjà disponible et les zones restantes
+        arrivent en continu. Là où le LiDAR n'est pas encore publié, le relief et
+        les photos aériennes restent parcourables.</p>
+      </details>
+      <details>
+        <summary>Quelle machine faut-il ?</summary>
+        <p>Un PC sous <b>Windows 10 ou 11</b> avec une carte graphique de moins de
+        dix ans et une connexion internet. La qualité d'affichage s'ajuste
+        automatiquement, et finement si vous aimez les réglages.</p>
+      </details>
+      <details>
+        <summary>Collectez-vous des données personnelles ?</summary>
+        <p><b>Non.</b> Pas de compte, pas de télémétrie, pas de traceurs. Les adresses
+        que vous recherchez ne servent qu'à positionner la caméra et restent sur
+        votre machine.</p>
+      </details>
+      <details>
+        <summary>Comment signaler un bug ou proposer une idée ?</summary>
+        <p>Sur le <b>Discord</b> de France Vue : un salon pour les bugs, un autre
+        pour les idées que vous pouvez proposer et voter. C'est là que se décide
+        la suite, et le créateur y répond directement.</p>
+      </details>
+      <details>
+        <summary>Et pour Mac ou Linux ?</summary>
+        <p>Windows d'abord, le reste est à l'étude : le moteur utilisé (Godot) rend
+        les portages possibles. Venez le dire à la communauté si vous en avez besoin,
+        ça pèse dans les priorités !</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="final" id="telecharger">
+  <h2>Votre première balade est à une adresse près.</h2>
+  <p>Téléchargez, tapez un lieu, marchez.</p>
+  <a href="https://github.com/francevue/france-vue/releases/latest/download/france-vue.zip" class="btn" style="font-size:17px;padding:17px 36px;">Télécharger la bêta pour Windows</a>
+  <p style="margin-top:18px;font-size:13.5px;">Version 0.1 bêta · Gratuit · Données officielles IGN</p>
+  <p style="margin-top:8px;font-size:12.5px;color:var(--texte-pale);max-width:52ch;margin-left:auto;margin-right:auto;line-height:1.55;">
+    Au lancement, Windows peut afficher un avertissement bleu : cliquez sur
+    « Informations complémentaires », puis « Exécuter quand même ».
+  </p>
+</section>
+
+<footer>
+  <div class="logo"><img class="logo-img" src="img/logo.png" alt="Logo France Vue">France Vue</div>
+  <div class="fcol">
+    <a href="#communaute">Communauté</a>
+    <a href="mailto:francevue@protonmail.com">Contact</a>
+    <span>Construit sur la <b>Géoplateforme IGN</b></span>
+  </div>
+</footer>
+
+<script>
+// ── Héros : massif en nuage de points tricolore (validé) ──
+const cv = document.getElementById('nuage');
+const ctx = cv.getContext('2d');
+let pts = [];
+
+const BLEU = [58, 105, 255];
+const BLANC = [245, 248, 255];
+const ROUGE = [255, 64, 84];
+
+function mix(a, b, k) {
+  return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+}
+
+function flagCol(px, alt, a) {
+  let c;
+  if (px < .305) c = BLEU;
+  else if (px < .365) c = mix(BLEU, BLANC, (px - .305) / .06);
+  else if (px < .635) c = BLANC;
+  else if (px < .695) c = mix(BLANC, ROUGE, (px - .635) / .06);
+  else c = ROUGE;
+  const lum = .55 + .45 * alt;
+  return `rgba(${c[0] * lum | 0},${c[1] * lum | 0},${c[2] * lum | 0},${a})`;
+}
+
+function build() {
+  const w = cv.width = innerWidth * devicePixelRatio;
+  const h = cv.height = cv.offsetHeight * devicePixelRatio;
+  pts = [];
+  const rnd = (() => { let s = 42; return () => (s = s * 16807 % 2147483647) / 2147483647; })();
+  const chains = [
+    { base: .58, amp: .30, n: 3000, size: 1.1, glow: .7, speed: .8 },
+    { base: .70, amp: .24, n: 2500, size: 1.5, glow: .85, speed: 1.2 },
+    { base: .86, amp: .17, n: 1900, size: 2.0, glow: 1.0, speed: 1.7 },
+  ];
+  chains.forEach((c, ci) => {
+    for (let i = 0; i < c.n; i++) {
+      const x = rnd();
+      let ridge = 0;
+      for (let o = 1; o <= 5; o++)
+        ridge += Math.abs(Math.sin(x * o * 9.7 + ci * 13 + o * o)) / o;
+      ridge = Math.pow(ridge / 1.9, 1.6);
+      const depth = rnd() * .5;
+      const y = c.base - ridge * c.amp + depth * c.amp * .9;
+      const t = Math.max(0, Math.min(1, (c.base - y) / c.amp));
+      pts.push({
+        x: x * w, y: y * h, px: x, t,
+        r: (c.size + rnd() * .8) * devicePixelRatio,
+        a: (0.25 + t * .75) * c.glow,
+        ph: rnd() * Math.PI * 2, sp: c.speed,
+      });
+    }
+  });
+}
+
+let t0 = performance.now();
+function frame(now) {
+  const dt = (now - t0) / 1000;
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  for (const p of pts) {
+    const tw = .72 + .28 * Math.sin(dt * p.sp + p.ph);
+    ctx.fillStyle = flagCol(p.px, p.t, p.a * tw);
+    ctx.fillRect(p.x, p.y, p.r, p.r);
+  }
+  requestAnimationFrame(frame);
+}
+build();
+requestAnimationFrame(frame);
+addEventListener('resize', build);
+
+// ── Galerie : vignettes de relief stylisées (placeholders avant captures) ──
+const PALETTES = {
+  alpes:     { ciel: ['#101b2e', '#26344e'], cretes: ['#fdfeff', '#9fb4d8', '#5b7099', '#2c3c58'] },
+  calanques: { ciel: ['#0e2233', '#1d4861'], cretes: ['#f2ead8', '#cdbfa3', '#3e7d8e', '#173a4a'] },
+  etretat:   { ciel: ['#15202e', '#3d566e'], cretes: ['#e8edf2', '#b9c6cf', '#5d7587', '#243646'] },
+  paris:     { ciel: ['#130f1e', '#2c2440'], cretes: ['#ffd9a0', '#c08a5d', '#6b4f63', '#2c2438'] },
+  pilat:     { ciel: ['#10202c', '#2d4a5a'], cretes: ['#f4e3c0', '#dcc191', '#7d9a7d', '#2e4642'] },
+  puy:       { ciel: ['#121a14', '#27362a'], cretes: ['#d8e6c8', '#94b377', '#5a7a4e', '#27392a'] },
+};
+document.querySelectorAll('.capture canvas').forEach((mini, idx) => {
+  const pal = PALETTES[mini.dataset.pal];
+  const c2 = mini.getContext('2d');
+  const w = mini.width = 640, h = mini.height = 400;
+  const grad = c2.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, pal.ciel[0]);
+  grad.addColorStop(1, pal.ciel[1]);
+  c2.fillStyle = grad;
+  c2.fillRect(0, 0, w, h);
+  pal.cretes.forEach((col, ri) => {
+    const base = .42 + ri * .17, amp = .14 - ri * .015, seed = idx * 17 + ri * 7;
+    c2.beginPath();
+    c2.moveTo(0, h);
+    for (let x = 0; x <= w; x += 4) {
+      let y = 0;
+      for (let o = 1; o <= 4; o++)
+        y += Math.sin(x / w * o * 5.1 + seed * o + o * o * 2.7) / o;
+      c2.lineTo(x, h * base - Math.abs(y) * h * amp);
+    }
+    c2.lineTo(w, h);
+    c2.closePath();
+    c2.fillStyle = col;
+    c2.fill();
+  });
+});
+</script>
+</body>
+</html>
