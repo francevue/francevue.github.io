@@ -267,6 +267,52 @@
   footer a { color: var(--texte-pale); text-decoration: none; }
   footer a:hover { color: var(--texte); }
 
+  /* Modale post-telechargement : s'ouvre au clic sur Telecharger, pendant que
+     le navigateur recupere le zip. Explique dezip, lancement et SmartScreen. */
+  .dl-voile {
+    position: fixed; inset: 0; z-index: 50; display: none;
+    align-items: center; justify-content: center; padding: 20px;
+    background: rgba(6,9,15,.72); backdrop-filter: blur(5px);
+  }
+  .dl-voile.ouvert { display: flex; }
+  .dl-modale {
+    background: var(--nuit-2); border: 1px solid rgba(255,255,255,.14);
+    border-radius: 14px; max-width: 570px; width: 100%; padding: 32px 36px;
+    position: relative; box-shadow: 0 30px 80px rgba(0,0,0,.6);
+    max-height: 92vh; overflow-y: auto;
+  }
+  .dl-fermer {
+    position: absolute; top: 14px; right: 16px; background: none; border: none;
+    color: var(--texte-pale); font-size: 22px; cursor: pointer; line-height: 1;
+    padding: 6px; border-radius: 6px;
+  }
+  .dl-fermer:hover { color: var(--texte); background: rgba(255,255,255,.06); }
+  .dl-modale h3 { font-family: 'Space Grotesk', sans-serif; font-size: 22px; margin-bottom: 6px; }
+  .dl-sous { color: var(--texte-pale); font-size: 14.5px; margin-bottom: 20px; }
+  .dl-etapes { list-style: none; display: flex; flex-direction: column; gap: 13px;
+    font-size: 15px; color: var(--texte-pale); }
+  .dl-etapes li { display: flex; gap: 12px; line-height: 1.55; }
+  .dl-etapes b { color: var(--texte); }
+  .dl-num {
+    flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 13px;
+    background: rgba(108,140,255,.14); color: var(--bleu-clair);
+    border: 1px solid rgba(108,140,255,.4);
+  }
+  .smartscreen {
+    margin: 16px 0 2px; padding: 16px 20px; border-radius: 8px;
+    background: #0b62a8; color: #dcecfb; font-size: 12.5px; line-height: 1.5;
+  }
+  .smartscreen .ss-titre { font-size: 15.5px; font-weight: 600; color: #fff; margin-bottom: 5px; }
+  .smartscreen .ss-lien { display: inline-block; margin-top: 7px; color: #fff;
+    text-decoration: underline; }
+  .smartscreen .ss-btn { display: inline-block; margin-top: 11px; background: #eaf4ff;
+    color: #0b3a63; padding: 6px 15px; border-radius: 3px; font-weight: 600; font-size: 13px; }
+  .ss-surligne { outline: 2px solid var(--rouge-vif); outline-offset: 3px; border-radius: 3px; }
+  .dl-note { margin-top: 16px; font-size: 13px; color: var(--texte-pale); }
+  .dl-note b { color: var(--texte); }
+
   @media (max-width: 900px) {
     .grille, .galerie-grille, .souv-grille { grid-template-columns: 1fr; }
     .stats { flex-wrap: wrap; }
@@ -538,6 +584,28 @@
   </p>
 </section>
 
+<div class="dl-voile" id="dl-voile" role="dialog" aria-modal="true" aria-labelledby="dl-titre">
+  <div class="dl-modale">
+    <button class="dl-fermer" id="dl-fermer" aria-label="Fermer">&#10005;</button>
+    <h3 id="dl-titre">C'est parti, le téléchargement démarre.</h3>
+    <p class="dl-sous">Trois étapes et vous explorez :</p>
+    <ol class="dl-etapes">
+      <li><span class="dl-num">1</span><span>Dézippez le dossier téléchargé : clic droit, <b>« Extraire tout »</b>.</span></li>
+      <li><span class="dl-num">2</span><span>Lancez <b>FranceVue.exe</b>.</span></li>
+      <li><span class="dl-num">3</span><span>Si Windows affiche cet avertissement bleu, c'est normal : l'application
+      est récente et pas encore connue de Microsoft. Cliquez
+      <b>« Informations complémentaires »</b> puis <b>« Exécuter quand même »</b>.</span></li>
+    </ol>
+    <div class="smartscreen" aria-hidden="true">
+      <div class="ss-titre">Windows a protégé votre ordinateur</div>
+      Microsoft Defender SmartScreen a empêché le démarrage d'une application non reconnue.
+      <br><span class="ss-lien ss-surligne">Informations complémentaires</span>
+      <br><span class="ss-btn ss-surligne">Exécuter quand même</span>
+    </div>
+    <p class="dl-note"><b>À faire une seule fois :</b> ensuite l'application se met à jour toute seule.</p>
+  </div>
+</div>
+
 <footer>
   <div class="logo"><img class="logo-img" src="img/logo.png" alt="Logo France Vue">France Vue</div>
   <div class="fcol">
@@ -616,6 +684,17 @@ function frame(now) {
 build();
 requestAnimationFrame(frame);
 addEventListener('resize', build);
+
+// ── Modale post-téléchargement : le clic sur Télécharger lance le zip ET
+// affiche les 3 étapes (dézip, lancement, avertissement SmartScreen) ──
+const dlVoile = document.getElementById('dl-voile');
+document.querySelectorAll('a[href$="FranceVue-win64.zip"]').forEach(a => {
+  a.addEventListener('click', () => dlVoile.classList.add('ouvert'));
+});
+function dlFerme() { dlVoile.classList.remove('ouvert'); }
+document.getElementById('dl-fermer').addEventListener('click', dlFerme);
+dlVoile.addEventListener('click', e => { if (e.target === dlVoile) dlFerme(); });
+addEventListener('keydown', e => { if (e.key === 'Escape') dlFerme(); });
 
 // ── Galerie : vignettes de relief stylisées (placeholders avant captures) ──
 const PALETTES = {
