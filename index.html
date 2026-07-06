@@ -162,7 +162,7 @@
   .capture {
     position: relative; border-radius: 10px; overflow: hidden;
     border: 1px solid rgba(255,255,255,.08); aspect-ratio: 16/10;
-    transition: transform .2s, border-color .2s;
+    transition: transform .2s, border-color .2s; cursor: zoom-in;
   }
   .capture:hover { transform: translateY(-3px); border-color: rgba(255,255,255,.25); }
   .capture img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -181,6 +181,29 @@
   .capture .ombre { position: absolute; inset: 0; z-index: 1;
     background:
       linear-gradient(180deg, rgba(10,14,22,.35) 0%, transparent 22%, transparent 48%, rgba(10,14,22,.82) 100%); }
+
+  /* Visionneuse : image de la galerie en grand, clic ou Echap pour fermer */
+  .lb-voile {
+    position: fixed; inset: 0; z-index: 60; display: none;
+    align-items: center; justify-content: center; padding: 28px;
+    background: rgba(6,9,15,.88); backdrop-filter: blur(6px); cursor: zoom-out;
+  }
+  .lb-voile.ouvert { display: flex; }
+  .lb-voile img {
+    max-width: 100%; max-height: calc(100vh - 110px); border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.14); box-shadow: 0 30px 80px rgba(0,0,0,.6);
+  }
+  .lb-legende {
+    position: absolute; left: 50%; transform: translateX(-50%); bottom: 26px;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 17px;
+    text-shadow: 0 1px 3px rgba(0,0,0,.9); pointer-events: none;
+  }
+  .lb-fermer {
+    position: absolute; top: 16px; right: 20px; background: none; border: none;
+    color: var(--texte-pale); font-size: 26px; cursor: pointer; line-height: 1;
+    padding: 6px; border-radius: 6px;
+  }
+  .lb-fermer:hover { color: var(--texte); background: rgba(255,255,255,.06); }
 
   /* Souveraineté */
   #souverainete { background: var(--nuit-2); border-top: 1px solid rgba(255,255,255,.06); }
@@ -413,10 +436,10 @@
     <div class="galerie-grille">
       <div class="capture"><img src="img/chambord-lidar.jpg" alt="Château de Chambord en nuage de points LiDAR"><div class="ombre"></div><span class="type">Scan LiDAR</span><span class="nom">Chambord point par point</span></div>
       <div class="capture"><img src="img/calanques-relief.jpg" alt="Relief brut des calanques de Cassis"><div class="ombre"></div><span class="type">Relief HD</span><span class="nom">Les Calanques à nu</span></div>
-      <div class="capture"><img src="img/potentiel-solaire.jpg" alt="Toiture colorée selon son potentiel solaire"><div class="ombre"></div><span class="type">Potentiel solaire</span><span class="nom">Notez votre toit au soleil</span></div>
+      <div class="capture"><img src="img/potentiel-solaire.jpg" alt="Toiture colorée selon son potentiel solaire"><div class="ombre"></div><span class="type">Potentiel solaire</span><span class="nom">Étudiez votre potentiel solaire</span></div>
       <div class="capture"><img src="img/cadastre.jpg" alt="Parcelle cadastrale surlignée en 3D"><div class="ombre"></div><span class="type">Cadastre</span><span class="nom">Trouvez votre parcelle</span></div>
-      <div class="capture"><img src="img/pilat-pente.jpg" alt="Mesure de pente sur la dune du Pilat"><div class="ombre"></div><span class="type">Télémètre laser</span><span class="nom">La pente de la dune du Pilat</span></div>
-      <div class="capture"><img src="img/mesure-hauteur.jpg" alt="Mesure de hauteur au château de Chambord"><div class="ombre"></div><span class="type">Télémètre laser</span><span class="nom">Mesurez la hauteur d'un château</span></div>
+      <div class="capture"><img src="img/pilat-pente.jpg" alt="Mesure de pente sur la dune du Pilat"><div class="ombre"></div><span class="type">Télémètre laser</span><span class="nom">Mesurez l'inclinaison d'une pente</span></div>
+      <div class="capture"><img src="img/mesure-hauteur.jpg" alt="Mesure de hauteur au château de Chambord"><div class="ombre"></div><span class="type">Télémètre laser</span><span class="nom">Mesurez des hauteurs et distances</span></div>
     </div>
   </div>
 </section>
@@ -611,6 +634,12 @@
   </div>
 </div>
 
+<div class="lb-voile" id="lb-voile" role="dialog" aria-modal="true">
+  <button class="lb-fermer" aria-label="Fermer">&#10005;</button>
+  <img id="lb-img" src="" alt="">
+  <div class="lb-legende" id="lb-legende"></div>
+</div>
+
 <footer>
   <div class="logo"><img class="logo-img" src="img/logo.png" alt="Logo France Vue">France Vue</div>
   <div class="fcol">
@@ -699,7 +728,24 @@ document.querySelectorAll('a[href$="FranceVue-win64.zip"]').forEach(a => {
 function dlFerme() { dlVoile.classList.remove('ouvert'); }
 document.getElementById('dl-fermer').addEventListener('click', dlFerme);
 dlVoile.addEventListener('click', e => { if (e.target === dlVoile) dlFerme(); });
-addEventListener('keydown', e => { if (e.key === 'Escape') dlFerme(); });
+
+// ── Visionneuse : clic sur une capture de la galerie pour l'agrandir ──
+const lbVoile = document.getElementById('lb-voile');
+const lbImg = document.getElementById('lb-img');
+const lbLegende = document.getElementById('lb-legende');
+document.querySelectorAll('.capture').forEach(cap => {
+  cap.addEventListener('click', () => {
+    const img = cap.querySelector('img');
+    lbImg.src = img.src;
+    lbImg.alt = img.alt;
+    lbLegende.textContent = cap.querySelector('.nom').textContent;
+    lbVoile.classList.add('ouvert');
+  });
+});
+function lbFerme() { lbVoile.classList.remove('ouvert'); }
+lbVoile.addEventListener('click', lbFerme);
+
+addEventListener('keydown', e => { if (e.key === 'Escape') { dlFerme(); lbFerme(); } });
 
 </script>
 </body>
