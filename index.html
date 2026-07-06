@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>France Vue : la France, comme vous ne l'avez jamais parcourue</title>
 <meta name="description" content="Parcourez la France en 3D : relief, photos aériennes et LiDAR HD depuis les données officielles de l'IGN. Gratuit, pour Windows.">
+<meta property="og:title" content="France Vue : la France en 3D">
+<meta property="og:description" content="Relief, photos aériennes, LiDAR HD et cadastre depuis les données officielles de l'IGN. Gratuit, pour Windows.">
+<meta property="og:image" content="https://francevue.github.io/img/chambord-lidar.jpg">
+<meta property="og:url" content="https://francevue.github.io/">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -160,7 +165,7 @@
     transition: transform .2s, border-color .2s;
   }
   .capture:hover { transform: translateY(-3px); border-color: rgba(255,255,255,.25); }
-  .capture canvas, .capture img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .capture img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .capture .nom {
     position: absolute; left: 14px; bottom: 12px; z-index: 2;
     font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16.5px;
@@ -400,18 +405,18 @@
 
 <section id="galerie">
   <div class="inner">
-    <h2>Marchez, survolez, mesurez, remontez le temps.</h2>
+    <h2>Survolez, scannez, mesurez.</h2>
     <p class="section-intro">
-      Explorer à pied ou en drone, mesurer un terrain, remonter le temps :
-      chaque vue ci-dessous est une chose que vous ferez dès la première minute.
+      Six captures prises dans France Vue, sans retouche. Tout ce que vous
+      voyez ici, vous le ferez dès la première minute.
     </p>
     <div class="galerie-grille">
-      <div class="capture"><canvas data-pal="alpes"></canvas><div class="ombre"></div><span class="type">Potentiel solaire</span><span class="nom">Notez votre toit au soleil</span></div>
-      <div class="capture"><img src="img/relief.jpg" alt="Vue aérienne du relief"><div class="ombre"></div><span class="type">Exploration</span><span class="nom">Survolez le relief</span></div>
-      <div class="capture"><canvas data-pal="etretat"></canvas><div class="ombre"></div><span class="type">Télémètre laser</span><span class="nom">Mesurez le terrain</span></div>
-      <div class="capture"><canvas data-pal="calanques"></canvas><div class="ombre"></div><span class="type">Imagerie historique</span><span class="nom">Remontez le temps</span></div>
-      <div class="capture"><img src="img/lidar.jpg" alt="Nuage de points LiDAR classé"><div class="ombre"></div><span class="type">Scan LiDAR</span><span class="nom">Révélez chaque point</span></div>
-      <div class="capture"><canvas data-pal="pilat"></canvas><div class="ombre"></div><span class="type">Recherche</span><span class="nom">Tapez une adresse</span></div>
+      <div class="capture"><img src="img/chambord-lidar.jpg" alt="Château de Chambord en nuage de points LiDAR"><div class="ombre"></div><span class="type">Scan LiDAR</span><span class="nom">Chambord point par point</span></div>
+      <div class="capture"><img src="img/calanques-relief.jpg" alt="Relief brut des calanques de Cassis"><div class="ombre"></div><span class="type">Relief HD</span><span class="nom">Les Calanques à nu</span></div>
+      <div class="capture"><img src="img/potentiel-solaire.jpg" alt="Toiture colorée selon son potentiel solaire"><div class="ombre"></div><span class="type">Potentiel solaire</span><span class="nom">Notez votre toit au soleil</span></div>
+      <div class="capture"><img src="img/cadastre.jpg" alt="Parcelle cadastrale surlignée en 3D"><div class="ombre"></div><span class="type">Cadastre</span><span class="nom">Trouvez votre parcelle</span></div>
+      <div class="capture"><img src="img/pilat-pente.jpg" alt="Mesure de pente sur la dune du Pilat"><div class="ombre"></div><span class="type">Télémètre laser</span><span class="nom">La pente de la dune du Pilat</span></div>
+      <div class="capture"><img src="img/mesure-hauteur.jpg" alt="Mesure de hauteur au château de Chambord"><div class="ombre"></div><span class="type">Télémètre laser</span><span class="nom">Mesurez la hauteur d'un château</span></div>
     </div>
   </div>
 </section>
@@ -696,40 +701,6 @@ document.getElementById('dl-fermer').addEventListener('click', dlFerme);
 dlVoile.addEventListener('click', e => { if (e.target === dlVoile) dlFerme(); });
 addEventListener('keydown', e => { if (e.key === 'Escape') dlFerme(); });
 
-// ── Galerie : vignettes de relief stylisées (placeholders avant captures) ──
-const PALETTES = {
-  alpes:     { ciel: ['#101b2e', '#26344e'], cretes: ['#fdfeff', '#9fb4d8', '#5b7099', '#2c3c58'] },
-  calanques: { ciel: ['#0e2233', '#1d4861'], cretes: ['#f2ead8', '#cdbfa3', '#3e7d8e', '#173a4a'] },
-  etretat:   { ciel: ['#15202e', '#3d566e'], cretes: ['#e8edf2', '#b9c6cf', '#5d7587', '#243646'] },
-  paris:     { ciel: ['#130f1e', '#2c2440'], cretes: ['#ffd9a0', '#c08a5d', '#6b4f63', '#2c2438'] },
-  pilat:     { ciel: ['#10202c', '#2d4a5a'], cretes: ['#f4e3c0', '#dcc191', '#7d9a7d', '#2e4642'] },
-  puy:       { ciel: ['#121a14', '#27362a'], cretes: ['#d8e6c8', '#94b377', '#5a7a4e', '#27392a'] },
-};
-document.querySelectorAll('.capture canvas').forEach((mini, idx) => {
-  const pal = PALETTES[mini.dataset.pal];
-  const c2 = mini.getContext('2d');
-  const w = mini.width = 640, h = mini.height = 400;
-  const grad = c2.createLinearGradient(0, 0, 0, h);
-  grad.addColorStop(0, pal.ciel[0]);
-  grad.addColorStop(1, pal.ciel[1]);
-  c2.fillStyle = grad;
-  c2.fillRect(0, 0, w, h);
-  pal.cretes.forEach((col, ri) => {
-    const base = .42 + ri * .17, amp = .14 - ri * .015, seed = idx * 17 + ri * 7;
-    c2.beginPath();
-    c2.moveTo(0, h);
-    for (let x = 0; x <= w; x += 4) {
-      let y = 0;
-      for (let o = 1; o <= 4; o++)
-        y += Math.sin(x / w * o * 5.1 + seed * o + o * o * 2.7) / o;
-      c2.lineTo(x, h * base - Math.abs(y) * h * amp);
-    }
-    c2.lineTo(w, h);
-    c2.closePath();
-    c2.fillStyle = col;
-    c2.fill();
-  });
-});
 </script>
 </body>
 </html>
