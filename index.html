@@ -284,6 +284,7 @@
   }
   .final h2 { font-size: clamp(30px, 4vw, 46px); margin-bottom: 14px; }
   .final p { color: var(--texte-pale); margin-bottom: 36px; font-size: 17px; }
+  .final .dl-boutons { display: flex; justify-content: center; align-items: center; gap: 18px; flex-wrap: wrap; }
 
   footer {
     padding: 30px 6vw; display: flex; justify-content: space-between; align-items: center;
@@ -378,7 +379,7 @@
     </p>
     <div class="cta-row">
       <a href="https://github.com/francevue/france-vue-releases/releases/latest/download/FranceVue-win64.zip" class="btn">Télécharger pour Windows</a>
-      <div class="cta-note">Gratuit · Windows 10 &amp; 11<br>Données officielles IGN</div>
+      <div class="cta-note">Gratuit · Windows 10 &amp; 11<br>Données officielles IGN<br><a href="https://github.com/francevue/france-vue-releases/releases/latest/download/FranceVue-linux-x86_64.tar.gz" style="color:var(--texte-pale);text-decoration:underline;text-underline-offset:3px;">Aussi disponible sur Linux</a></div>
     </div>
     <div class="bandeau-beta">
       <span class="pastille-pt"></span>
@@ -593,9 +594,10 @@
       </details>
       <details>
         <summary>Et pour Mac ou Linux ?</summary>
-        <p>Windows d'abord, le reste est à l'étude : le moteur utilisé (Godot) rend
-        les portages possibles. Venez le dire à la communauté si vous en avez besoin,
-        ça pèse dans les priorités !</p>
+        <p>La version Linux est disponible : téléchargez l'archive .tar.gz, extrayez-la,
+        puis lancez FranceVue.x86_64. Les mises à jour automatiques n'y sont pas encore,
+        revenez ici pour les nouvelles versions. Mac est à l'étude : venez le dire à la
+        communauté si vous en avez besoin, ça pèse dans les priorités !</p>
       </details>
     </div>
   </div>
@@ -604,11 +606,15 @@
 <section class="final" id="telecharger">
   <h2>Votre première balade est à une adresse près.</h2>
   <p>Téléchargez, tapez un lieu, marchez.</p>
-  <a href="https://github.com/francevue/france-vue-releases/releases/latest/download/FranceVue-win64.zip" class="btn" style="font-size:17px;padding:17px 36px;">Télécharger la bêta pour Windows</a>
+  <div class="dl-boutons">
+    <a href="https://github.com/francevue/france-vue-releases/releases/latest/download/FranceVue-win64.zip" class="btn" style="font-size:17px;padding:17px 36px;">Télécharger la bêta pour Windows</a>
+    <a href="https://github.com/francevue/france-vue-releases/releases/latest/download/FranceVue-linux-x86_64.tar.gz" class="btn-ghost">Télécharger pour Linux</a>
+  </div>
   <p style="margin-top:18px;font-size:13.5px;">Version 0.2 bêta · Gratuit · Données officielles IGN</p>
   <p style="margin-top:8px;font-size:12.5px;color:var(--texte-pale);max-width:52ch;margin-left:auto;margin-right:auto;line-height:1.55;">
     Au lancement, Windows peut afficher un avertissement bleu : cliquez sur
-    « Informations complémentaires », puis « Exécuter quand même ».
+    « Informations complémentaires », puis « Exécuter quand même ».<br><br>
+    Sur Linux : extrayez l'archive .tar.gz, puis lancez <b>FranceVue.x86_64</b>.
   </p>
 </section>
 
