@@ -80,12 +80,14 @@
   }
   .btn:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(48, 85, 232, .65); }
   .btn-ghost {
-    display: inline-block; color: var(--texte) !important; font-weight: 600;
-    border: 1px solid rgba(255,255,255,.25); border-radius: 6px;
-    padding: 14px 28px; text-decoration: none; font-size: 15.5px;
-    transition: border-color .15s, background .15s;
+    display: inline-block; color: #fff !important; font-weight: 600;
+    background: linear-gradient(100deg, #131b2e, #1b2540);
+    border: 1px solid rgba(255,255,255,.16);
+    padding: 14px 29px; border-radius: 6px; text-decoration: none; font-size: 16px;
+    box-shadow: 0 0 34px rgba(0, 0, 0, .5);
+    transition: transform .15s, box-shadow .15s, border-color .15s;
   }
-  .btn-ghost:hover { border-color: rgba(255,77,98,.6); background: rgba(255,77,98,.08); }
+  .btn-ghost:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.32); box-shadow: 0 0 44px rgba(0, 0, 0, .65); }
 
   .hero {
     position: relative; z-index: 2; flex: 1;
@@ -609,7 +611,7 @@
   <p>Téléchargez, tapez un lieu, marchez.</p>
   <div class="dl-boutons">
     <a href="https://github.com/francevue/france-vue-releases/releases/latest/download/FranceVue-win64.zip" class="btn" style="font-size:17px;padding:17px 36px;">Télécharger la bêta pour Windows</a>
-    <a href="https://github.com/francevue/france-vue-releases/releases/latest/download/FranceVue-linux-x86_64.tar.gz" class="btn-ghost">Télécharger pour Linux</a>
+    <a href="https://github.com/francevue/france-vue-releases/releases/latest/download/FranceVue-linux-x86_64.tar.gz" class="btn-ghost" style="font-size:17px;padding:16px 35px;">Télécharger pour Linux</a>
   </div>
   <p style="margin-top:18px;font-size:13.5px;">Version 0.2 bêta · Gratuit · Données officielles IGN</p>
   <p style="margin-top:8px;font-size:12.5px;color:var(--texte-pale);max-width:52ch;margin-left:auto;margin-right:auto;line-height:1.55;">
